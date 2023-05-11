@@ -1,10 +1,13 @@
 package com.department.department.Controller;
 
+import com.department.department.Exception.NotFoundException;
 import com.department.department.Model.DepartmentRequestModel;
 import com.department.department.Model.DepartmentResponseModel;
 import com.department.department.Service.DepartmentService;
 import com.department.department.Shared.DepartmentDto;
+import com.department.department.Shared.Utils;
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 @RestController
@@ -22,77 +25,50 @@ import java.util.List;
 public class DepartmentController {
     @Autowired
     DepartmentService departmentService;
-    @GetMapping
-    public ResponseEntity<List<DepartmentResponseModel>> getAllDepartments() {
-        List<DepartmentDto> departments = departmentService.getAllDepartments();
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        List<DepartmentResponseModel> departmentsList = new ArrayList<>();
-        departments.forEach((departmentDto -> {
-            DepartmentResponseModel departmentResponseModel = modelMapper.map(departmentDto, DepartmentResponseModel.class);
-            departmentsList.add(departmentResponseModel);
-        }));
 
-        if (departmentsList.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(departmentsList, HttpStatus.OK);
+    @Autowired
+    Utils utils;
+    @GetMapping
+    public ResponseEntity<List<DepartmentResponseModel>> getAllDepartments() throws NotFoundException{
+        List<DepartmentDto> departments = departmentService.getAllDepartments();
+
+        return new ResponseEntity<>(utils.getDepartmentResponseModelList(departments), HttpStatus.OK);
     }
 
     @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<DepartmentResponseModel> createDepartments(@Valid @RequestBody DepartmentRequestModel departmentDetails) {
+    public ResponseEntity<DepartmentResponseModel> createDepartments(@Valid @RequestBody DepartmentRequestModel departmentDetails) throws NotFoundException {
 
         String name = departmentDetails.getName();
         if (departmentService.getDepartmentByName(name) != null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new ValidationException("Department with this name already exists");
         }
 
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        DepartmentDto departmentDto = modelMapper.map(departmentDetails, DepartmentDto.class);
+        DepartmentDto departmentDto = utils.getDepartmentDto(departmentDetails);
         DepartmentDto createdValue = departmentService.createDepartments(departmentDto);
-        DepartmentResponseModel returnValue = modelMapper.map(createdValue, DepartmentResponseModel.class);
 
-        return new ResponseEntity<>(returnValue, HttpStatus.CREATED);
+        return new ResponseEntity<>(utils.getDepartmentResponseModel(createdValue), HttpStatus.CREATED);
 
 
     }
 
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<DepartmentResponseModel> getDepartmentById(@PathVariable Integer id) {
+    public ResponseEntity<DepartmentResponseModel> getDepartmentById(@PathVariable Integer id) throws NotFoundException {
         DepartmentDto departmentDto = departmentService.getDepartmentById(id);
-        if (departmentDto == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
 
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-
-        DepartmentResponseModel returnValue = modelMapper.map(departmentDto, DepartmentResponseModel.class);
-
-        return new ResponseEntity<>(returnValue, HttpStatus.OK);
+        return new ResponseEntity<>(utils.getDepartmentResponseModel(departmentDto), HttpStatus.OK);
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<DepartmentResponseModel> getDepartmentByName(@PathVariable String name) {
+    public ResponseEntity<DepartmentResponseModel> getDepartmentByName(@PathVariable String name) throws NotFoundException {
         DepartmentDto departmentDto = departmentService.getDepartmentByName(name);
-
-        if(departmentDto == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-
-        DepartmentResponseModel returnValue = modelMapper.map(departmentDto, DepartmentResponseModel.class);
-        return new ResponseEntity<>(returnValue, HttpStatus.OK);
+        return new ResponseEntity<>(utils.getDepartmentResponseModel(departmentDto), HttpStatus.OK);
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<DepartmentResponseModel>> searchEmployees(
             @RequestParam(value = "state", required = false) String state,
-            @RequestParam(value = "city", required = false) String city){
+            @RequestParam(value = "city", required = false) String city) throws NotFoundException {
         List<DepartmentDto> departments = null;
         if(state != null && city != null){
             departments = departmentService.getDepartmentByStateAndCity(state,city);
@@ -102,30 +78,17 @@ public class DepartmentController {
             departments = departmentService.getDepartmentByCity(city);
         }
 
-        if(departments == null){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
 
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-
-        List<DepartmentResponseModel> departmentsList = new ArrayList<>();
-
-        departments.forEach(departmentDto -> {
-            DepartmentResponseModel departmentResponseModel = modelMapper.map(departmentDto, DepartmentResponseModel.class);
-            departmentsList.add(departmentResponseModel);
-        });
-
-        return new ResponseEntity<>(departmentsList, HttpStatus.OK);
+        return new ResponseEntity<>(utils.getDepartmentResponseModelList(departments), HttpStatus.OK);
     }
 
 
     @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
-    ResponseEntity<DepartmentResponseModel> updateDepartment(@Valid @RequestBody DepartmentRequestModel departmentDetails) {
+    ResponseEntity<DepartmentResponseModel> updateDepartment(@Valid @RequestBody DepartmentRequestModel departmentDetails) throws NotFoundException {
         String name = departmentDetails.getName();
         if (departmentService.getDepartmentByName(name) == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new ValidationException("User not found, failed to update");
         }
 
         //Getting existing user
@@ -139,22 +102,21 @@ public class DepartmentController {
 
         DepartmentDto createdValue = departmentService.createDepartments(departmentDto);
 
-        DepartmentResponseModel returnValue = modelMapper.map(createdValue, DepartmentResponseModel.class);
 
-        return new ResponseEntity<>(returnValue, HttpStatus.OK);
+        return new ResponseEntity<>(utils.getDepartmentResponseModel(createdValue), HttpStatus.OK);
     }
 
     @DeleteMapping("/{name}")
     ResponseEntity<Void> delete(@PathVariable String name) {
         if (departmentService.getDepartmentByName(name) == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new ValidationException("Department with this name already exists");
         }
         boolean res = departmentService.deleteDepartmentByName(name);
         if (res) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new ValidationException("error occurred while deleting");
     }
 }
 
