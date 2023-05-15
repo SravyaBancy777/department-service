@@ -52,7 +52,7 @@ public class Utils {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper.map(departmentDetails, DepartmentDto.class);
     }
-    public List<DepartmentDto> getDepartnmentDtoList(Iterable<DepartmentEntity> departments){
+    public List<DepartmentDto> getDepartmentDtoList(Iterable<DepartmentEntity> departments){
         List<DepartmentDto> allDepartments = new ArrayList<>();
         ModelMapper modelMapper = new ModelMapper();
         long count = StreamSupport.stream(departments.spliterator(), false).count();

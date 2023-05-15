@@ -13,7 +13,7 @@ import lombok.Setter;
 
 public class DepartmentResponseModel {
 
-    private String id;
+    private int id;
 
     @JsonProperty("department-name")
     private String name;

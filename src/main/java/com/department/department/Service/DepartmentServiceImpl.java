@@ -42,7 +42,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 
 
-        return utils.getDepartnmentDtoList(departments);
+        return utils.getDepartmentDtoList(departments);
     }
 
     @Override
@@ -63,26 +63,26 @@ public class DepartmentServiceImpl implements DepartmentService {
     public List<DepartmentDto> getDepartmentByCity(String city) {
         Iterable<DepartmentEntity> departments = departmentRepository.findByCity(city);
 
-        return utils.getDepartnmentDtoList(departments);
+        return utils.getDepartmentDtoList(departments);
     }
 
     @Override
     public List<DepartmentDto> getDepartmentByState(String state) {
         Iterable<DepartmentEntity> departments = departmentRepository.findByState(state);
 
-        return utils.getDepartnmentDtoList(departments);
+        return utils.getDepartmentDtoList(departments);
     }
     @Override
     public List<DepartmentDto> getDepartmentByCountry(String country) {
         Iterable<DepartmentEntity> departments = departmentRepository.findByCountry(country);
 
-        return utils.getDepartnmentDtoList(departments);
+        return utils.getDepartmentDtoList(departments);
     }
     @Override
     public List<DepartmentDto> getDepartmentByZipcode(String zipcode) {
         Iterable<DepartmentEntity> departments = departmentRepository.findByZipcode(zipcode);
 
-        return utils.getDepartnmentDtoList(departments);
+        return utils.getDepartmentDtoList(departments);
     }
     @Override
     public boolean deleteDepartmentByName(String name) {
@@ -100,6 +100,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     public List<DepartmentDto> getDepartmentByStateAndCity(String state, String city) {
         Iterable<DepartmentEntity> departments = departmentRepository.findByStateAndCity(state, city);
 
-        return utils.getDepartnmentDtoList(departments);
+        return utils.getDepartmentDtoList(departments);
     }
 }

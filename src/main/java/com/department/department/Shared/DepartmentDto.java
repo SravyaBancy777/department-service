@@ -12,7 +12,7 @@ import lombok.Setter;
 
 public class DepartmentDto {
 
-    private String id;
+    private int id;
     private String name;
     private String city;
     private String state;
