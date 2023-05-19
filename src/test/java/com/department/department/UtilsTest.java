@@ -7,7 +7,7 @@ import com.department.department.Model.DepartmentResponseModel;
 import com.department.department.Shared.DepartmentDto;
 import com.department.department.Shared.Utils;
 import jakarta.validation.ValidationException;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
